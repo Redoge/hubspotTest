@@ -13,8 +13,10 @@ const getApiKeyIframeLinkController = (req, res) => {
     res.json({response});
 }
 const postApiKeyIframeController = (req, res) => {
-    const {body, params, query, headers} = req;
-    res.json({body, params, query});
+    const {apikey, userEmail, appId, accountId, userId, portalId} = req.body;
+    const date = new Date().toLocaleString('uk-UA');
+    console.log(`Connection request time: ${date} \n${{apikey, userEmail, appId, accountId, userId, portalId}}`);
+    res.render('iframes/apikeySuccess', {userEmail})
 }
 
 
