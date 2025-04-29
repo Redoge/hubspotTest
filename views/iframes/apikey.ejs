@@ -58,6 +58,11 @@
         <h2>StreamTelecom - Hubspot</h2>
         <form action="<%= postApiKeySave %>" method="POST">
             <input type="text" id="apikey" name="apikey" placeholder="ApiKey" required>
+            <input type="text" id="userEmail" name="userEmail" value="<%=userEmail%>" hidden>
+            <input type="text" id="appId" name="appId" value="<%=appId%>" hidden>
+            <input type="text" id="accountId" name="accountId" value="<%=accountId%>" hidden>
+            <input type="text" id="userId" name="userId" value="<%=userId%>" hidden>
+            <input type="text" id="portalId" name="portalId" value="<%=portalId%>" hidden>
             <button type="submit">Save</button>
         </form>
     </div>
