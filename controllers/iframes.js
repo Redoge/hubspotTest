@@ -7,7 +7,7 @@ const getApiKeyIframeController = (req, res) => {
 }
 const getApiKeyIframeLinkController = (req, res) => {
     const url = `${process.env.APP_URL}/iframes/apikey`
-    res.json(url);
+    res.json({url});
 }
 const postApiKeyIframeController = (req, res)=>{
     const {body, params, query, headers} = req;
