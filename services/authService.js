@@ -13,6 +13,7 @@ const exchangeCodeForTokenAndSave = async (code) =>{
     const data = await exchangeCodeForToken(code);
     const tokenData = await getAccessTokenInfo(data.access_token);
     saveAuthUser(tokenData);
+    console.log({user: tokenData})
     return tokenData;
 }
 const saveAuthUser = (data) => {
