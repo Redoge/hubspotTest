@@ -1,4 +1,5 @@
 const { getAuthLinkString, exchangeCodeForTokenAndSave} = require("../services/authService");
+const {start} = require("../services/callPipeline");
 const getAuthLink = async (req, res) => {
     const url = getAuthLinkString()
     res.redirect(url);
@@ -6,7 +7,9 @@ const getAuthLink = async (req, res) => {
 
 const getAuthCallback = async (req, res) => {
     const {code} = req.query;
-    await exchangeCodeForTokenAndSave(code);
+    const user = await exchangeCodeForTokenAndSave(code);
+    console.log({user})
+    start("+380931806733","+380931806635","in",user.user_id)
     res.redirect('/dashboard');
 }
 
