@@ -1,4 +1,4 @@
-const {exchangeCodeForToken, getAuthLinkString} = require("../services/authService");
+const { getAuthLinkString, exchangeCodeForTokenAndSave} = require("../services/authService");
 const getAuthLink = async (req, res) => {
     const url = getAuthLinkString()
     res.redirect(url);
@@ -6,6 +6,8 @@ const getAuthLink = async (req, res) => {
 
 const getAuthCallback = async (req, res) => {
     const {code} = req.query;
-    const data = await exchangeCodeForToken(code);
+    await exchangeCodeForTokenAndSave(code);
     res.redirect('/dashboard');
 }
+
+module.exports = {getAuthLink, getAuthCallback}
