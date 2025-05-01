@@ -1,4 +1,5 @@
 const axios = require("axios");
+const {users} = require("./userService");
 const exchangeCodeForToken = async (code) => {
     const clientId = process.env.HUBSPOT_CLIENT_ID;
     const clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
@@ -8,7 +9,15 @@ const exchangeCodeForToken = async (code) => {
     const data = response.data; //  {token_type, refresh_token, expires_in, access_token}
     return data
 }
-
+const exchangeCodeForTokenAndSave = async (code) =>{
+    const data = await exchangeCodeForToken(code);
+    const tokenData = await getAccessTokenInfo(data.access_token);
+    saveAuthUser(tokenData);
+    return tokenData;
+}
+const saveAuthUser = (data) => {
+    users.push(data);
+}
 const getAuthLinkString = () => {
     const clientId = process.env.HUBSPOT_CLIENT_ID;
     const redirectUri = process.env.APP_URL + '/auth/hubspot/callback';
@@ -62,4 +71,4 @@ const getAccessTokenInfo = async (accessToken) => {
     const data = response.data; //  {token, user, hub_domain, scopes, token_type, user_id, expires_in, app_id, hub_id, signed_access_token}
     return data
 }
-module.exports = {exchangeCodeForToken,getAuthLinkString}
+module.exports = {exchangeCodeForToken,getAuthLinkString,exchangeCodeForTokenAndSave}
