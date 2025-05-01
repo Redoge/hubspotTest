@@ -5,5 +5,6 @@ const user = require('../routes/user')
 
 router.use("/iframes", iframes)
 router.use("/user", user)
+router.use("/auth", auth)
 
 module.exports = router;
