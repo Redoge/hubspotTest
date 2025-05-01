@@ -8,9 +8,11 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 * Return: {id: string, properties: {"phone": "+380931806738"...}}
 * in prop. may be "firstname", "lastname", "email", "phone" if exists but IMPORTANT - phone
 * */
-const getOrCreateLead = async (user, client, manager) => {
-    const existsLeadResponse = await axios.post('https://api.hubapi.com/crm/v3/objects/contacts/search', {
-        body: {
+const getOrCreateLead = async (user, client) => {
+    const token = user.token;
+    console.log({token})
+    const existsLeadResponse = await axios.post('https://api.hubapi.com/crm/v3/objects/contacts/search',
+        {
             filterGroups: [
                 {
                     filters: [
@@ -24,20 +26,28 @@ const getOrCreateLead = async (user, client, manager) => {
             ],
             properties: ["firstname", "lastname", "email", "phone"],
             limit: 1
-        }
-    })
+            ,
+
+        }, {
+            headers: {
+                Authorization: `Bearer ${user.token}`
+            }
+        })
     const data = existsLeadResponse.data;
     let lead;
     if (data.results.length !== 0) {
         lead = existsLeadResponse.data.results[0]
     } else {
         const leadResponse = await axios.post('https://api.hubapi.com/crm/v3/objects/contacts', {
-            body: {
                 properties: {
                     phone: client // TODO: normalize number (hb can receive abracadabra...)
                 }
             }
-        })
+            , {
+                headers: {
+                    Authorization: `Bearer ${user.token}`
+                }
+            })
         lead = leadResponse.data
     }
     return lead;
@@ -45,6 +55,7 @@ const getOrCreateLead = async (user, client, manager) => {
 
 
 const start = async (from, to, type, userId) => {
+    console.log({users, from, to, type, userId})
     const user = users.find(u => u.user_id === userId);
     if (!user) throw createHttpError(404, 'User not found')
     let manager, client;
@@ -55,27 +66,39 @@ const start = async (from, to, type, userId) => {
         manager = from
         client = to
     }
+    console.log({client, to})
+    console.log("Start getting lead")
     const lead = await getOrCreateLead(user, client, manager)
+    console.log({lead})
+    console.log("End getting lead")
 
-
+    console.log("Start pipeline")
     const startTime = Date.now();
 
     const callRecord = await createCallRecord(from, to, lead, user, type);
+    console.log("Created record")
 
     await delay(5000);
-    await updateCallRecord(callRecord.id, user, "RINGING");
+    let recordId = callRecord.id;
+    console.log({recordId})
+    await updateCallRecord(recordId, user, "RINGING");
+    console.log("Updated record")
 
     await delay(5000);
-    await updateCallRecord(callRecord.id, user, "IN_PROGRESS");
+    await updateCallRecord(recordId, user, "IN_PROGRESS");
+    console.log("Updated record")
 
     await delay(5000);
     const callDuration = Math.floor((Date.now() - startTime) / 1000);
-    await updateCallRecord(callRecord.id, user, "COMPLETED", 'https://download.samplelib.com/mp3/sample-3s.mp3', callDuration);
+    await updateCallRecord(recordId, user, "COMPLETED", 'https://download.samplelib.com/mp3/sample-3s.mp3', callDuration);
+    console.log("Updated record")
+
 }
 
 const createCallRecord = async (fromNumber, toNumber, lead, user, direction, bodyMessage = "Body", title = "Title", status = "CONNECTING") => {
     const directionNormalized = "in" ? "INBOUND" : "OUTBOUND"
     const timestamp = Date.now()
+    console.log({timestamp})
     const properties = {
         hs_call_title: title,
         hs_call_body: bodyMessage,
@@ -87,6 +110,7 @@ const createCallRecord = async (fromNumber, toNumber, lead, user, direction, bod
         hubspot_owner_id: user.user_id,
         hs_call_source: "INTEGRATIONS_PLATFORM",
     }
+    console.log({properties})
     const associations = [
         {
             to: {
@@ -101,12 +125,14 @@ const createCallRecord = async (fromNumber, toNumber, lead, user, direction, bod
         }
     ]
     const body = {properties, associations}
-    const callRecordResponse = await axios.post('https://api.hubapi.com/crm/v3/objects/calls', {
-        body,
-        headers: {
-            Authorization: `Bearer ${user.access_token}`
-        }
-    })
+    const token = user.token;
+    const callRecordResponse = await axios.post('https://api.hubapi.com/crm/v3/objects/calls',
+        body
+        , {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
     let data = callRecordResponse.data;
     console.log({create: data})
     return data
@@ -150,12 +176,14 @@ const updateCallRecord = async (callRecordId, user, status, audioUrl, callDurati
     if (audioUrl) properties.hs_call_recording_url = audioUrl
     if (callDuration) properties.hs_call_duration = callDuration
     const body = {properties}
-    const callRecordResponse = await axios.patch(`https://api.hubapi.com/crm/v3/objects/calls/${callRecordId}`, {
-        body,
-        headers: {
-            Authorization: `Bearer ${user.access_token}`
-        }
-    })
+    const token = user.token;
+    const callRecordResponse = await axios.patch(`https://api.hubapi.com/crm/v3/objects/calls/${callRecordId}`,
+        body
+        , {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
     let data = callRecordResponse.data;
     console.log({update: data})
     return data
