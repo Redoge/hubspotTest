@@ -1,7 +1,7 @@
 const {getAuthCallback, getAuthLink} = require("../controllers/auth");
 const router = require('express').Router();
 
-router.get('/callback', getAuthCallback)
-router.get('/auth', getAuthLink)
+router.get('/hubspot/callback', getAuthCallback)
+router.get('/hubspot', getAuthLink)
 
 module.exports = router;
