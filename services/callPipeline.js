@@ -1,6 +1,7 @@
 const {users} = require("./userService");
 const createHttpError = require("http-errors");
 const axios = require("axios");
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 
 /*
@@ -57,9 +58,22 @@ const start = async (from, to, type, userId) => {
     const lead = await getOrCreateLead(user, client, manager)
 
 
+    const startTime = Date.now();
+
+    const callRecord = await createCallRecord(from, to, lead, user, type);
+
+    await delay(5000);
+    await updateCallRecord(callRecord.id, user, "RINGING");
+
+    await delay(5000);
+    await updateCallRecord(callRecord.id, user, "IN_PROGRESS");
+
+    await delay(5000);
+    const callDuration = Math.floor((Date.now() - startTime) / 1000);
+    await updateCallRecord(callRecord.id, user, "COMPLETED", 'https://download.samplelib.com/mp3/sample-3s.mp3', callDuration);
 }
 
-const createCallRecord = async (fromNumber, toNumber,  lead, user, direction, bodyMessage = "Body", title = "Title", status = "CONNECTING") => {
+const createCallRecord = async (fromNumber, toNumber, lead, user, direction, bodyMessage = "Body", title = "Title", status = "CONNECTING") => {
     const directionNormalized = "in" ? "INBOUND" : "OUTBOUND"
     const timestamp = Date.now()
     const properties = {
@@ -130,11 +144,11 @@ const createCallRecord = async (fromNumber, toNumber,  lead, user, direction, bo
     //     "archived": false
     // }
 }
-const updateCallRecord = async (callRecordId, status, audioUrl, callDuration, user) => {
+const updateCallRecord = async (callRecordId, user, status, audioUrl, callDuration) => {
     const properties = {}
-    if(status) properties.hs_call_status = status
-    if(audioUrl) properties.hs_call_recording_url = audioUrl
-    if(callDuration) properties.hs_call_duration = callDuration
+    if (status) properties.hs_call_status = status
+    if (audioUrl) properties.hs_call_recording_url = audioUrl
+    if (callDuration) properties.hs_call_duration = callDuration
     const body = {properties}
     const callRecordResponse = await axios.patch(`https://api.hubapi.com/crm/v3/objects/calls/${callRecordId}`, {
         body,
