@@ -22,6 +22,8 @@ const saveAuthUser = (data) => {
 const getAuthLinkString = () => {
     const clientId = process.env.HUBSPOT_CLIENT_ID;
     const redirectUri = process.env.APP_URL + '/auth/hubspot/callback';
+    console.log(process.env.HUBSPOT_CLIENT_ID)
+    console.log(process.env.APP_URL)
     const url = `https://app-eu1.hubspot.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=crm.objects.line_items.write%20crm.objects.goals.write%20oauth%20crm.objects.courses.write%20crm.objects.listings.write%20crm.objects.services.write%20tickets%20crm.objects.contacts.write%20crm.objects.appointments.write%20crm.objects.companies.write%20crm.objects.deals.write%20crm.objects.contacts.read`
     return url;
 }
