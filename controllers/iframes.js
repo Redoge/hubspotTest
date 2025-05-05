@@ -14,10 +14,24 @@ const getApiKeyIframeLinkController = (req, res) => {
 }
 const postApiKeyIframeController = (req, res) => {
     const {apikey, userEmail, appId, accountId, userId, portalId} = req.body;
-    const date = new Date().toLocaleString('uk-UA',{timeZone:'Europe/Kyiv' });
-    console.log(`Connection request time: ${date} (uk-UA) \n${JSON.stringify({apikey, userEmail, appId, accountId, userId, portalId})}`);
+    const date = new Date().toLocaleString('uk-UA', {timeZone: 'Europe/Kyiv'});
+    console.log(`Connection request time: ${date} (uk-UA) \n${JSON.stringify({
+        apikey,
+        userEmail,
+        appId,
+        accountId,
+        userId,
+        portalId
+    })}`);
     res.render('iframes/apikeySuccess', {userEmail})
+}
+const getCTCCardController = (req, res) => {
+    const body = req.body;
+    const query = req.body;
+    console.log({body})
+    console.log({query})
+    res.render('iframes/ctc')
 }
 
 
-module.exports = {getApiKeyIframeController, getApiKeyIframeLinkController, postApiKeyIframeController}
+module.exports = {getApiKeyIframeController, getApiKeyIframeLinkController, postApiKeyIframeController,getCTCCardController}
