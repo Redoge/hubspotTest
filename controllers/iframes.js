@@ -30,8 +30,32 @@ const getCTCCardController = (req, res) => {
     const query = req.body;
     console.log({body})
     console.log({query})
-    res.render('iframes/ctc')
+    res.render('iframes/ctc',{})
+}
+const getCTCCardControllerData = (req, res) => {
+    const body = req.body;
+    const query = req.body;
+    console.log({body})
+    console.log({query})
+    let data = {
+        "title": "New CRM Card",
+        "fetch": {
+            "targetUrl": "https://hubspot.streamtelecom.redoge.dev/iframes/crm-card/ctc",
+            "objectTypes": [
+                {
+                    "name": "contacts",
+                    "propertiesToSend": [
+                        "firstname",
+                        "email",
+                        "lastname",
+                        "phone"
+                    ]
+                }
+            ]
+        }
+    };
+    res.json(data)
 }
 
 
-module.exports = {getApiKeyIframeController, getApiKeyIframeLinkController, postApiKeyIframeController,getCTCCardController}
+module.exports = {getApiKeyIframeController, getApiKeyIframeLinkController, postApiKeyIframeController,getCTCCardController,getCTCCardControllerData}
