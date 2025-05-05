@@ -9,7 +9,7 @@ const getAuthCallback = async (req, res) => {
     const {code} = req.query;
     const user = await exchangeCodeForTokenAndSave(code);
     console.log({user})
-    start("+380931806733","+380931806635","in",user.user_id)
+    start("+380931806734","+380931806635","in",user.user_id)
     res.redirect('/dashboard');
 }
 
