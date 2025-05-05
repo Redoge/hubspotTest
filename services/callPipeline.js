@@ -19,7 +19,7 @@ const getOrCreateLead = async (user, client) => {
                         {
                             "propertyName": "phone",
                             "operator": "EQ",
-                            "value": client // TODO: normalize number (hb can receive abracadabra...)
+                            "value": client // TODO: normalize number (hs can receive abracadabra...)
                         }
                     ]
                 }
@@ -40,7 +40,7 @@ const getOrCreateLead = async (user, client) => {
     } else {
         const leadResponse = await axios.post('https://api.hubapi.com/crm/v3/objects/contacts', {
                 properties: {
-                    phone: client // TODO: normalize number (hb can receive abracadabra...)
+                    phone: client // TODO: normalize number (hs can receive abracadabra...)
                 }
             }
             , {
