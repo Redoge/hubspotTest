@@ -53,6 +53,111 @@ const getOrCreateLead = async (user, client) => {
     return lead;
 }
 
+const createTicket = async ({
+                                user,
+                                recordId,
+                                contactId,
+                                subject,
+                                content,
+                                hs_pipeline = 0,
+                                hs_pipeline_stage = 1,
+                                hs_ticket_priority = 'MEDIUM',
+                            }) => {
+    try {
+        if (!subject) {
+            subject = `Unanswered call.`
+        }
+        if (!content) {
+            content = `Unanswered call.`
+        }
+        let properties = {
+            subject,
+            content,
+            hs_pipeline,
+            hs_pipeline_stage,
+            hs_ticket_priority,
+        };
+        const associations = [
+            {
+                to: {
+                    id: recordId
+                },
+                types: [
+                    {
+                        "associationCategory": "HUBSPOT_DEFINED", // Ticket to call
+                        "associationTypeId": 219
+                    }
+                ]
+            } ,
+            {
+                to: {
+                    id: contactId
+                },
+                types: [
+                    {
+                        "associationCategory": "HUBSPOT_DEFINED", // Ticket to contact
+                        "associationTypeId": 16
+                    }
+                ]
+            }
+        ]
+        const response = await axios.post(
+            'https://api.hubapi.com/crm/v3/objects/tickets',
+            {
+                properties,
+                associations
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        const data = response.data;
+        console.log('Ticket created:', data);
+        return data
+    } catch (error) {
+        console.error('Error by  ticket creating:', error.response?.data || error.message);
+    }
+}
+const getCallInfo = async (callRecordId, token) => {
+    try {
+        const response = await axios.get(
+            `https://api.hubapi.com/crm/v3/objects/calls/${callRecordId}?associations=contacts`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        const data = response.data;
+        console.log('Call info:', data);
+        return data
+    } catch (error) {
+        console.error('Error getting call info:', error.response?.data || error.message);
+    }
+}
+const getContactById = async (contactId, token, properties = ['phone']) => {
+    try {
+        const response = await axios.get(
+            `https://api.hubapi.com/crm/v3/objects/contacts/${contactId}?properties=${properties.join(',')}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        const data = response.data;
+        console.log('Contact info:', data);
+        return data;
+    } catch (error) {
+        console.error('Error getting contact info:', error.response?.data || error.message);
+    }
+};
+
 
 const start = async (from, to, type, userId) => {
     console.log({users, from, to, type, userId})
@@ -88,9 +193,14 @@ const start = async (from, to, type, userId) => {
     await updateCallRecord(recordId, user, "IN_PROGRESS");
     console.log("Updated record")
 
+    // await delay(5000);
+    // const callDuration = Math.floor((Date.now() - startTime) / 1000);
+    // await updateCallRecord(recordId, user, "COMPLETED", 'https://download.samplelib.com/mp3/sample-3s.mp3', callDuration);
+    // console.log("Updated record")
+
     await delay(5000);
     const callDuration = Math.floor((Date.now() - startTime) / 1000);
-    await updateCallRecord(recordId, user, "COMPLETED", 'https://download.samplelib.com/mp3/sample-3s.mp3', callDuration);
+    await processUnansweredCall(recordId, user);
     console.log("Updated record")
 
 }
@@ -187,5 +297,15 @@ const updateCallRecord = async (callRecordId, user, status, audioUrl, callDurati
     let data = callRecordResponse.data;
     console.log({update: data})
     return data
+}
+
+const processUnansweredCall = async (callRecordId, user) => {
+    const callResult = await updateCallRecord(callRecordId, user, 'NO_ANSWER')
+    const callFullInfo = await getCallInfo(callRecordId, user.token)
+    // const contact = await getContactById(, user.token, ['phone'])
+    const contactId = callFullInfo.associations.contacts.results[0].id
+    const ticket = await createTicket({user, recordId: callRecordId, contactId});
+    console.log({ticket})
+    return callResult
 }
 module.exports = {start}
