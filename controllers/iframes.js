@@ -38,7 +38,7 @@ const getCTCCardControllerData = (req, res) => {
     console.log({body})
     console.log({query})
     let data = {
-        "title": "New CRM Card",
+        "title": "ClickToCall",
         "fetch": {
             "targetUrl": "https://hubspot.streamtelecom.redoge.dev/iframes/crm-card/ctc",
             "objectTypes": [
