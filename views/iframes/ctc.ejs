@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Click to Call</title>
+    <script src="https://js.hubspot.com/hub-http/current/hub-http.min.js"></script>
+    <script src="https://static.hsappstatic.net/CoreProperties/static-1.11331/js/crm-card-bridge-api.js"></script>
+    <style>
+        body {
+            font-family: 'Lexend Deca', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 16px;
+            color: #33475b;
+        }
+        .call-button {
+            background-color: #ff7a59;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .call-button:hover {
+            background-color: #ff8f73;
+        }
+        .phone-display {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #516f90;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h3>Телефонувати контакту</h3>
+    <div class="phone-display" id="phone-number">Завантаження...</div>
+    <button class="call-button" id="click-to-call-btn">Зателефонувати</button>
+    <div class="status" id="call-status"></div>
+</div>
+</body>
+</html>
