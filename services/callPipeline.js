@@ -76,6 +76,7 @@ const createTicket = async ({
             hs_pipeline,
             hs_pipeline_stage,
             hs_ticket_priority,
+            hubspot_owner_id:user.user_id
         };
         const associations = [
             {
@@ -88,7 +89,7 @@ const createTicket = async ({
                         "associationTypeId": 219
                     }
                 ]
-            } ,
+            },
             {
                 to: {
                     id: contactId
@@ -183,7 +184,7 @@ const start = async (from, to, type, userId) => {
     const callRecord = await createCallRecord(from, to, lead, user, type);
     console.log("Created record")
 
-    await delay(5000);
+    await delay(100);
     let recordId = callRecord.id;
     console.log({recordId})
     await updateCallRecord(recordId, user, "RINGING");
@@ -194,12 +195,12 @@ const start = async (from, to, type, userId) => {
     console.log("Updated record")
 
     // await delay(5000);
-    // const callDuration = Math.floor((Date.now() - startTime) / 1000);
+    //  const callDuration = (Date.now() - startTime); // Millis
     // await updateCallRecord(recordId, user, "COMPLETED", 'https://download.samplelib.com/mp3/sample-3s.mp3', callDuration);
     // console.log("Updated record")
 
-    await delay(5000);
-    const callDuration = Math.floor((Date.now() - startTime) / 1000);
+    await delay(10000);
+    const callDuration = (Date.now() - startTime); // Millis
     await processUnansweredCall(recordId, user);
     console.log("Updated record")
 
@@ -300,12 +301,33 @@ const updateCallRecord = async (callRecordId, user, status, audioUrl, callDurati
 }
 
 const processUnansweredCall = async (callRecordId, user) => {
-    const callResult = await updateCallRecord(callRecordId, user, 'NO_ANSWER')
+    const callResult = await updateCallRecord(callRecordId, user, 'NO_ANSWER', undefined, 0)
     const callFullInfo = await getCallInfo(callRecordId, user.token)
-    // const contact = await getContactById(, user.token, ['phone'])
     const contactId = callFullInfo.associations.contacts.results[0].id
-    const ticket = await createTicket({user, recordId: callRecordId, contactId});
+    const contact = await getContactById(contactId, user.token, ['phone', 'firstname', 'lastname'])
+    const messages = createSubjectAndContentByContact(contact.properties)
+    const ticket = await createTicket({
+        user,
+        recordId: callRecordId,
+        contactId,
+        subject: messages.subject,
+        content: messages.content
+    });
     console.log({ticket})
     return callResult
+}
+
+const createSubjectAndContentByContact = (contact) => {
+    console.log(contact)
+    const {phone, firstname, lastname} = contact;
+    const res = {};
+    if (firstname || lastname) {
+        res.subject = `Unanswered call (${firstname ? firstname : ''}${lastname ? " " + lastname : ''})`
+        res.content = `Unanswered call:\nContact: ${firstname} ${lastname}\nPhone: ${phone}`
+    } else {
+        res.subject = `Unanswered call (${phone})`
+        res.content = `Unanswered call: ${phone}`
+    }
+    return res;
 }
 module.exports = {start}
