@@ -9,10 +9,10 @@ const exchangeCodeForToken = async (code) => {
     const data = response.data; //  {token_type, refresh_token, expires_in, access_token}
     return data
 }
-const exchangeCodeForTokenAndSave = async (code) =>{
+const exchangeCodeForTokenAndSave = async (code) => {
     const data = await exchangeCodeForToken(code);
     const tokenData = await getAccessTokenInfo(data.access_token);
-    saveAuthUser(tokenData);
+    saveAuthUser({...tokenData, refreshToken: data.refresh_token});
     console.log({user: tokenData})
     return tokenData;
 }
@@ -74,4 +74,16 @@ const getAccessTokenInfo = async (accessToken) => {
     const data = response.data; //  {token, user, hub_domain, scopes, token_type, user_id, expires_in, app_id, hub_id, signed_access_token}
     return data
 }
-module.exports = {exchangeCodeForToken,getAuthLinkString,exchangeCodeForTokenAndSave}
+const updateToken = async (tokenData) => {
+    const clientId = process.env.HUBSPOT_CLIENT_ID;
+    const clientSecret = process.env.HUBSPOT_CLIENT_SECRET;
+    const refreshToken = tokenData.refreshToken;
+    const url = `https://api.hubapi.com/oauth/v1/token?grant_type=refresh_token&client_id=${clientId}&client_secret=${clientSecret}&refresh_token=${refreshToken}`;
+    const response = await axios.post(url);
+    const data = response.data; //  {token_type, refresh_token, expires_in, access_token}
+    const tokenInfo = await getAccessTokenInfo(data.access_token);
+    let userInfo = {...tokenInfo, refreshToken: data.refresh_token};
+    saveAuthUser(userInfo);
+    return userInfo
+}
+module.exports = {exchangeCodeForToken, getAuthLinkString, exchangeCodeForTokenAndSave}
