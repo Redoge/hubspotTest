@@ -1,11 +1,8 @@
-const users = [];
-
-
 const getAuthUsersByData = (data) => {
     const {portalId, userId, userEmail, appId, accountId} = data;
     return [{accountId, appId, accountName: userEmail, userId, portalId}]
 }
-module.exports = {getAuthUsersByData, users}
+module.exports = {getAuthUsersByData}
 /*
 [
     {
