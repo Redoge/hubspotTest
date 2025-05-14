@@ -3,7 +3,7 @@ const key = require('./keys');
 const request = require('request-promise');
 const actions = require('./actions');
 
-exports.voipEvents = async (allData) => {
+exports.hubspot = async (allData) => {
     console.log('voip_events_all_data', JSON.stringify(allData));
 
     const event = {};
